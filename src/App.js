@@ -6,21 +6,17 @@ function App() {
   const [result, setResult] = useState(null);
 
   const analyze = async () => {
-    if (!link) {
-      alert('Please paste a YouTube video link');
-      return;
-    }
-
     try {
-      const response = await axios.post('https://content-moderator-backend-2.onrender.com/analyze', {
-        youtubeLink: link,
-      });
-
+      const response = await axios.post('https://content-moderator-backend-2.onrender.com/analyze', { youtubeLink: link });
       setResult(response.data);
     } catch (error) {
-      console.error('Error analyzing video:', error);
-      alert('Network Error: Please ensure backend is running.');
+      console.error('Error:', error);
     }
+  };
+
+  const getYouTubeEmbedUrl = (url) => {
+    const videoIdMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    return videoIdMatch ? `https://www.youtube.com/embed/${videoIdMatch[1]}` : '';
   };
 
   return (
@@ -29,20 +25,30 @@ function App() {
       <input
         type="text"
         value={link}
-        onChange={(e) => setLink(e.target.value)}
+        onChange={e => setLink(e.target.value)}
         placeholder="Paste YouTube Link"
-        style={{ width: '300px', padding: '10px' }}
+        style={{ width: '300px' }}
       />
-      <button onClick={analyze} style={{ marginLeft: '10px', padding: '10px 20px' }}>
-        Analyze
-      </button>
+      <button onClick={analyze}>Analyze</button>
 
       {result && (
         <div style={{ marginTop: 20 }}>
           <h3>{result.videoTitle}</h3>
           <p><b>Tags:</b> {result.tags.join(', ')}</p>
           <p><b>Moderation Status:</b> {result.moderationStatus}</p>
-          <p><b>Description:</b> {result.description}</p>
+
+          {/* Embed YouTube Video */}
+          <div style={{ marginTop: 20 }}>
+            <iframe
+              width="560"
+              height="315"
+              src={getYouTubeEmbedUrl(link)}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
         </div>
       )}
     </div>
